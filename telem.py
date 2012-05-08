@@ -17,6 +17,7 @@ def parse_cmd(line):
 		
 	return cmd, arg
 
+
 class MyPanel(wx.Panel):
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent)
@@ -59,39 +60,46 @@ class MainWindow(wx.Frame):
 		# Create a panel
 		self.panel = MyPanel(self)
 		
-		# Create a callback timer
-		self.timer = wx.Timer(self)
-		self.Bind(wx.EVT_TIMER, self.update, self.timer)
-		self.timer.Start(200)
-		
+		# Start serial communications
 		self.open_port()
 		
+		# Create a callback timer for periodic updates
+		self.timer = wx.Timer(self)
+		self.Bind(wx.EVT_TIMER, self.update, self.timer)
+		self.timer.Start(1000)
+		
+		# Make the panel visible
 		self.Show(True)
 		
 	def open_port(self):
-		self.ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=0.5);
+		self.ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=0.10);
 		print 'Opened port \"' + self.ser.portstr + '\"'
 		self.x = 1;
 	
 	def update(self, evt):
-		print 'Updating'
-		line = self.ser.readline();
-		raw = ('Raw:' + line).replace('\n','')
-		print raw
-		cmd, arg = parse_cmd(line);
+		# Read lines from the serial connection
+		lines = self.ser.readlines();
 		
-		if cmd != None and arg != None:
-			print 'Got cmd=\'' + cmd + '\', arg=\'' + arg + '\'';
-		self.ser.write('<do,' + str(self.x) + '>\n')
+		# Evaluate each line's command
+		for line in lines:
+			cmd, arg = parse_cmd(line);
+			if cmd != None and arg != None:
+				print 'cmd=\'' + cmd + '\', arg=\'' + arg + '\'';
+		
+		# Write stuff back to the device
+		self.ser.write('<echo,' + str(self.x) + '>\n')
 		self.x = self.x + 1
-		
+	
 	def OnExit(self, evt=None):
+		self.ser.close();
 		self.Close(True) # Close the frame
+		print 'So long and thanks for all the fish'
 	
 	def OnAbout(self, evt):
 		info = wx.MessageDialog( self, "Sup bro", "About", wx.OK )
 		info.ShowModal()
 		info.Destroy()
+
 
 class myApp(wx.App):
 	def __init__(self):
@@ -99,23 +107,6 @@ class myApp(wx.App):
 		self.frame = MainWindow(None)
 		self.MainLoop()
 
+
 if __name__ == '__main__':
 	app = myApp()
-	
-#	ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=0.5);
-#	print 'Opened port \"' + ser.portstr + '\"'
-#	x = 1;
-	
-#	while True:
-#		line = ser.readline();
-#		print 'got \'' + line + '\''
-#		cmd, arg = parse_cmd(line);
-		
-#		if cmd != None and arg != None:
-#			print 'Got cmd=\'' + cmd + '\', arg=\'' + arg + '\'';
-#		ser.write('<do,' + str(x) + '>\n')
-#		x=x+1
-#		time.sleep(0.500)
-
-#	ser.close();
-	print 'Goodbye'
