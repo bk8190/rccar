@@ -51,7 +51,7 @@ class MyPanel(wx.Panel):
 		colours = [wx.Colour(200,30,30), wx.Colour(240,240,30), wx.Colour(240,240,30), wx.Colour(0,240,0), wx.Colour(0,240,0)]
 		self.batt_meter.SetIntervalColours(colours)
 		
-		ticks = [str(interval) for interval in batt_intervals]
+		ticks = [str(i) for i in batt_intervals]
 		self.batt_meter.SetTicks(ticks)
 		self.batt_meter.SetNumberOfSecondaryTicks(1)
 		self.batt_meter.SetTicksColour(wx.BLACK)
@@ -66,12 +66,15 @@ class MyPanel(wx.Panel):
 		# Set up the RSSI meter
 		self.rssi_meter = SM.SpeedMeter(self, agwStyle=SM.SM_DRAW_HAND|SM.SM_DRAW_SECTORS|SM.SM_DRAW_MIDDLE_TEXT|SM.SM_DRAW_SECONDARY_TICKS, size=(200,200))
 		#self.rssi_meter.SetAngleRange(-pi/6, 7*pi/6)
-		rssi_intervals = range(0,61,20)
+		self.rssi_meter.SetAngleRange(0, pi)
+		rssi_intervals = [0, 1]
+		print rssi_intervals
 		self.rssi_meter.SetIntervals(rssi_intervals)
 		
-		ticks = [str(interval) for interval in rssi_intervals]
+		ticks = [str(i) for i in rssi_intervals]
 		self.rssi_meter.SetTicks(ticks)
-		self.rssi_meter.SetMiddleText("Signal (dbm)")
+		self.rssi_meter.SetNumberOfSecondaryTicks(9)
+		self.rssi_meter.SetMiddleText("Signal")
 		self.rssi_meter.SetMiddleTextFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
 		self.rssi_meter.SetMiddleTextColour(wx.BLACK)
 		
@@ -128,7 +131,7 @@ class MainWindow(wx.Frame):
 	params = dict()
 
 	def __init__(self, parent):
-		wx.Frame.__init__(self, parent, title="my awesome frame", size=(800,500))
+		wx.Frame.__init__(self, parent, title="my awesome frame", size=(650,400))
 		
 		# Create a status bar
 		self.CreateStatusBar()
